@@ -313,6 +313,125 @@ GET my_index/_mapping
 
 
 
+#### indexテンプレートを作成
+
+- "accesslog-"で始まる名前のインデックスが作られる際にこのテンプレートが適用される
+```
+PUT _template/my_template
+{
+  "index_patterns": "accesslog-*",
+  "settings": {
+    "number_of_shards": 1
+  },
+  "mappings": {
+    "properties": {
+      "host": {
+        "type": "keyword"
+      },
+      "uri": {
+        "type": "keyword"
+      },
+      "method": {
+        "type": "keyword"
+      },
+      "accesstime": {
+        "type": "date"
+      }
+    }
+  }
+}
+```
+
+```
+POST accesslog-hello/_doc
+{
+  "host": "web01",
+  "uri": "/user/2024",
+  "method": "PUT",
+  "accesstime": "2024-01-28T10:10:10"
+}
+```
+
+#### mapping情報を取得
+
+- (indexテンプレートが適用されているのが確認できる。)
+
+```
+GET accesslog-hello/_mapping
+GET accesslog-hello/_doc/fCkWTI0B4EZSiz7nThO1
+```
+
+
+####  indexテンプレートの設定情報を取得
+
+```
+GET _template/my_template
+```
+
+#### 複数のindexテンプレートを作成
+
+- 複数のテンプレートに当てはまるindexは、orderの小さいテンプレートから適用される。
+- 最終的に、最後に適用されたテンプレートの値で上書きされる.
+- orderの小さい方のテンプレートで設定されていて、orderの大きい方では設定されていない項目は、小さい方の値がそのまま設定される。
+
+```
+PUT _template/my_default_template
+{
+  "index_patterns": "*",
+  "order": 1,
+  "settings": {
+    "number_of_shards": 3,
+    "number_of_replicas": 3
+  }
+}
+
+PUT _template/my_tweet_template
+{
+  "index_patterns": "my_index-*",
+  "order": 10,
+  "settings": {
+    "number_of_shards": 1
+  },
+  "mappings": {
+    "properties": {
+      "user_name": {
+        "type": "text"
+      },
+      "date": {
+        "type": "date"
+      },
+      "message": {
+        "type": "text"
+      }
+    }
+  }
+}
+```
+
+#### 上で定義した複数のテンプレートが当てはまるindex名で作成
+```
+PUT /my_index-hello/_doc/1
+{
+  "user_name": "name",
+  "message": "hello",
+  "age": 19
+}
+```
+
+#### テンプレートの削除
+
+```
+DELETE _template/my_template
+```
+
+#### テンプレート一覧の取得
+
+```
+GET _template/?pretty
+```
+
+
+
 
 
 
