@@ -430,31 +430,80 @@ DELETE _template/my_template
 GET _template/?pretty
 ```
 
+#### 動的mapping定義
 
+- dynamic_templatesの中は、任意の数の配列
+- price_of_floatという名前の定義を作成
+- price_* にマッチする かつ *_createdにマッチしないfieldを作成したバイは、float型で作成する。
 
+```
+PUT my_index/_mapping
+{
+  "properties": {
+    "item": {
+      "type": "text"
+    }
+  },
+  "dynamic_templates": [
+    {
+      "price_of_float": {
+        "match": "price_*",
+        "unmatch": "*_created",
+        "mapping": {
+          "type": "float"
+        }
+      }
+    }
+  ]
+}
+```
 
+-  price_book: 上記で定義した動的mapping定義に該当するため、float型で定義される
+-  price_book_created: 上記で定義した動的mapping定義に該当しないので、Elasticsearchの自動型推論によって決まる。
 
+```
+POST my_index/_doc
+{
+  "item": "book",
+  "price_book": 500,
+  "price_book_created": "2019-10-06"
+}
+```
 
+#### 上記確認
 
+```
+GET my_index/_doc/XCmYTY0B4EZSiz7nVRY2
+GET my_index/_mapping
+```
 
+- 自動型推論で、longにされるようなfieldは、integer型で定義される
 
+```
+PUT my_index/_mapping
+{
+  "dynamic_templates": [
+    {
+      "long_to_integer": {
+        "match_mapping_type": "long",
+        "mapping": {
+          "type": "integer"
+        }
+    }
+    }
+  ]
+}
+```
 
+- 上記確認
 
+```
+POST my_index/_doc
+{
+  "price": 500
+}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+GET my_index/_mapping
+```
 
 
