@@ -506,4 +506,125 @@ POST my_index/_doc
 GET my_index/_mapping
 ```
 
+#### ===================
 
+#### 全件のドキュメントを返す。
+
+```
+GET my_index/_search
+{
+  "query": {
+    "match_all": {}
+  }
+}
+```
+
+-　sizeを指定して取得するを制限することは可能。
+
+```
+GET my_index/_search
+{
+  "query": {
+    "match_all": {}
+  }
+}
+```
+
+#### 普通の全文検索
+
+```
+GET hello_index/_search
+{
+  "query": {
+    "match": {
+      "message": "Elasticsearch"
+    }
+  }
+}
+```
+
+
+- or検索 
+  - ※or検索を明示的に指定したもの。（上記の省略形と結果は同じ。）
+
+```
+GET hello_index/_search
+{
+  "query": {
+    "match": {
+      "message": {
+        "query": "Elastic hello",
+        "operator": "or"
+      }
+      
+    }
+  }
+}
+```
+
+- and検索
+
+```
+GET my_index/_search
+{
+  "query": {
+    "match": {
+      "message": {
+        "query": "To Mother",
+        "operator": "and"
+      }
+    }
+  }
+}
+```
+
+#### minimum_sould_match以上該当するキーワードが含まれていれば検索
+
+```
+GET my_index/_search
+{
+  "query": {
+    "match": {
+      "kids_plate_menu": {
+        "query": "curry hi spaghetti",
+        "minimum_should_match": "2"
+      }
+    }
+  }
+}
+```
+
+
+- minimum_sould_matchの値に指定できるのは、数値と割合%. 
+
+```
+GET my_index/_search
+{
+  "query": {
+    "match": {
+      "kids_plate_menu": {
+        "query": "curry hi spaghetti dddd",
+        "minimum_should_match": "75%"
+      }
+    }
+  }
+}
+```
+
+#### match_phrase: queryで指定した順番通りにマッチするドキュメントを検索する
+
+- 「Tom chased Jerry and Jerry hits tom」にはマッチするけど、
+- 「Jerry chased Tom」にはマッチしない。
+
+```
+GET my_index/_search
+{
+  "query": {
+    "match_phrase": {
+      "catton_description": {
+        "query": "Tom chased Jerry"
+      }
+    }
+  }
+}
+```
